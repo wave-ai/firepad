@@ -1,7 +1,7 @@
 {
   "name": "firepad",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "1.5.11",
+  "version": "1.5.12",
   "author": "Firebase (https://firebase.google.com/)",
   "contributors": [
     "Michael Lehenbauer <michael@firebase.com>"
@@ -9,7 +9,7 @@
   "homepage": "http://www.firepad.io/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/firebase/firepad.git"
+    "url": "https://github.com/wave-ai/firepad.git"
   },
   "browser": {
     "jsdom": false
