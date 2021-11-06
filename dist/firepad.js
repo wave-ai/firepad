@@ -1732,9 +1732,9 @@ var firepad = firepad || { };
 firepad.RichTextToolbar = (function(global) {
   var utils = firepad.utils;
 
-  function RichTextToolbar(imageInsertionUI) {
+  function RichTextToolbar(imageInsertionUI, options = null) {
     this.imageInsertionUI = imageInsertionUI;
-    this.element_ = this.makeElement_();
+    this.element_ = this.makeElement_(options);
   }
 
   utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'strike', 'font', 'font-size', 'color',
@@ -1751,23 +1751,63 @@ firepad.RichTextToolbar = (function(global) {
     return btn;
   }
 
-  RichTextToolbar.prototype.makeElement_ = function() {
+  RichTextToolbar.prototype.makeElement_ = function(options) {
     var self = this;
 
     var font = this.makeFontDropdown_();
     var fontSize = this.makeFontSizeDropdown_();
     var color = this.makeColorDropdown_();
 
-    var toolbarOptions = [
-      utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'})
-    ];
+    var toolbarOptions = [];
+    console.log("______________________");
+    console.log(options);
+    if (options === null) {
+      toolbarOptions = [
+        utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
+        utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
+        utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
+        utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
+        utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
+        utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
+        utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
+        utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'})
+      ];
+    } else {
+      options.map(option => {
+        if (option && option.name) {
+          console.log(option)
+          switch (option.name) {
+            case 'font':
+              toolbarOptions.push(utils.elt('div', [font], { 'class': 'firepad-btn-group'}));
+              break;
+            case 'font-size':
+              toolbarOptions.push(utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}));
+              break;
+            case 'color':
+              toolbarOptions.push(utils.elt('div', [color], { 'class': 'firepad-btn-group'}));
+              break;
+            case 'font-styles':
+              toolbarOptions.push(utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}));
+              break;
+            case 'list-types':
+              toolbarOptions.push(utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}));
+              break;
+            case 'indents':
+              toolbarOptions.push(utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}));
+              break;
+            case 'paragraph-position':
+              toolbarOptions.push(utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}));
+              break;
+            case 'undo-redo':
+              toolbarOptions.push(utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}));
+              break;
+            default:
+              break;
+          }
+        }
+
+      });
+    }
 
     if (self.imageInsertionUI) {
       toolbarOptions.push(utils.elt('div', [self.makeButton_('insert-image')], { 'class': 'firepad-btn-group' }));
@@ -6427,16 +6467,58 @@ firepad.Firepad = (function(global) {
 
    this.firepadWrapper_.appendChild(dialog);
   };
-  Firepad.prototype.addToolbar = function(options = []) {
-    this.toolbar = new RichTextToolbar(this.imageInsertionUI);
+  Firepad.prototype.addToolbar = function(withImageUI = false, options = []) {
+    this.toolbar = new RichTextToolbar(withImageUI ? this.imageInsertionUI : null, options);
 
     if (options) {
-      options.map((item) => {
-        this.toolbar.on(item.name, item.handler, this);
+      options.map((option) => {
+        if (option && option.name) {
+          switch (option.name) {
+            case 'font':
+              this.toolbar.on('font', this.font, this);
+              break;
+            case 'font-size':
+              this.toolbar.on('font-size', this.fontSize, this);
+              break;
+            case 'color':
+              this.toolbar.on('color', this.color, this);
+              break;
+            case 'font-styles':
+              this.toolbar.on('bold', this.bold, this);
+              this.toolbar.on('italic', this.italic, this);
+              this.toolbar.on('underline', this.underline, this);
+              this.toolbar.on('strike', this.strike, this);
+              break;
+            case 'list-types':
+              this.toolbar.on('ordered-list', this.orderedList, this);
+              this.toolbar.on('unordered-list', this.unorderedList, this);
+              this.toolbar.on('todo-list', this.todo, this);
+              break;
+            case 'indents':
+              this.toolbar.on('indent-increase', this.indent, this);
+              this.toolbar.on('indent-decrease', this.unindent, this);
+              break;
+            case 'paragraph-position':
+              this.toolbar.on('left', function() { this.align('left')}, this);
+              this.toolbar.on('center', function() { this.align('center')}, this);
+              this.toolbar.on('right', function() { this.align('right')}, this);
+              break;
+            case 'undo-redo':
+              this.toolbar.on('undo', this.undo, this);
+              this.toolbar.on('redo', this.redo, this);
+              break;
+            default:
+              break;
+          }
+        }
       });
+    }
+    if (withImageUI) {
+      this.toolbar.on('insert-image', this.makeImageDialog_, this);
     }
 
     this.firepadWrapper_.insertBefore(this.toolbar.element(), this.firepadWrapper_.firstChild);
+    this.firepadWrapper_.className += ' firepad-richtext firepad-with-toolbar';
   };
 
   Firepad.prototype.addToolbar_ = function() {
