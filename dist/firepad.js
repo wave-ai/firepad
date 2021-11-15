@@ -1759,8 +1759,6 @@ firepad.RichTextToolbar = (function(global) {
     var color = this.makeColorDropdown_();
 
     var toolbarOptions = [];
-    console.log("______________________");
-    console.log(options);
     if (options === null) {
       toolbarOptions = [
         utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
@@ -1775,7 +1773,6 @@ firepad.RichTextToolbar = (function(global) {
     } else {
       options.map(option => {
         if (option && option.name) {
-          console.log(option)
           switch (option.name) {
             case 'font':
               toolbarOptions.push(utils.elt('div', [font], { 'class': 'firepad-btn-group'}));
